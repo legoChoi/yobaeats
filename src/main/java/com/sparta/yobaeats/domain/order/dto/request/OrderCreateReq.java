@@ -7,13 +7,14 @@ import com.sparta.yobaeats.domain.order.entity.OrderStatus;
 import com.sparta.yobaeats.domain.store.entity.Store;
 import com.sparta.yobaeats.domain.user.entity.User;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record OrderCreateReq(
 
-        @NotBlank(message = OrderValidationMessage.STOREID_BLANK_MESSAGE)
+        @NotNull(message = OrderValidationMessage.STOREID_NOTNULL_MESSAGE)
         Long storeId,
 
-        @NotBlank(message = OrderValidationMessage.MENUID_BLANK_MESSAGE)
+        @NotNull(message = OrderValidationMessage.MENUID_NOTNULL_MESSAGE)
         Long menuId
 ) {
     /**

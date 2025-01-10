@@ -47,13 +47,18 @@ public class ReviewService {
             throw new InvalidException(ErrorCode.INVALID_ORDER_STATUS);
         }
 
-        reviewCreateReq.to(user, order, store);
+        reviewRepository.save(reviewCreateReq.to(user, order, store));
+
+        Double averageStarRate = reviewRepository.getAverageStarRate(store.getId());
+        store.updateStarRate(averageStarRate != null ? averageStarRate : 0.0);
 
         return store.getId();
     }
 
-    public List<ReviewReadInfoRes> readReviews(Long storeId, int startStar, int endStar) {
-        if (startStar > endStar) {
+    public List<ReviewReadInfoRes> readReviews(
+        Long storeId, Integer startStar, Integer endStar
+    ) {
+        if (startStar != null && endStar != null && startStar > endStar) {
             throw new InvalidException(ErrorCode.INVALID_STAR_RANGE);
         }
 
@@ -61,7 +66,7 @@ public class ReviewService {
             .findReviewsByStoreIdAndStar(storeId, startStar, endStar);
 
         if (reviewList.isEmpty()) {
-            throw new NotFoundException(ErrorCode.STAR_NOT_FOUND);
+            throw new NotFoundException(ErrorCode.REVIEW_NOT_FOUND);
         }
 
         return reviewList.stream()

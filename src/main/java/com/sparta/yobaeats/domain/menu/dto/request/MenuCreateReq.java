@@ -3,13 +3,16 @@ package com.sparta.yobaeats.domain.menu.dto.request;
 import com.sparta.yobaeats.domain.menu.dto.MenuValidationMessage;
 import com.sparta.yobaeats.domain.menu.entity.Menu;
 import com.sparta.yobaeats.domain.store.entity.Store;
+import com.sparta.yobaeats.global.exception.CustomRuntimeException;
+import com.sparta.yobaeats.global.exception.error.ErrorCode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public record MenuCreateReq(
 
-        @NotBlank(message = MenuValidationMessage.STOREID_BLANK_MESSAGE)
+        @NotNull(message = MenuValidationMessage.STOREID_NOTNULL_MESSAGE)
         Long storeId,
 
         @Size(max = MenuValidationMessage.NAME_MAX, message = MenuValidationMessage.NAME_MAX_MESSAGE)

@@ -1,6 +1,6 @@
 package com.sparta.yobaeats.domain.menu.service;
 
-import com.sparta.yobaeats.global.security.entity.CustomUserDetails;
+import com.sparta.yobaeats.domain.auth.entity.UserDetailsCustom;
 import com.sparta.yobaeats.domain.menu.dto.request.MenuCreateReq;
 import com.sparta.yobaeats.domain.menu.dto.request.MenuUpdateReq;
 import com.sparta.yobaeats.domain.menu.entity.Menu;
@@ -12,6 +12,7 @@ import com.sparta.yobaeats.domain.user.entity.UserRole;
 import com.sparta.yobaeats.domain.user.service.UserService;
 import com.sparta.yobaeats.global.exception.CustomRuntimeException;
 import com.sparta.yobaeats.global.exception.error.ErrorCode;
+import org.junit.jupiter.api.BeforeEach; // 추가된 import
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,12 +45,13 @@ public class MenuServiceTest {
     @Mock
     private UserService userService;
 
-    // 메뉴 여러 개 생성 테스트
-    @Test
-    @WithMockUser(roles = "OWNER", username = "owner@example.com")
-    void 메뉴_여러개_생성_성공() {
-        Long storeId = 1L;
-        User owner = User.builder()
+    private User owner;
+    private UserDetailsCustom ownerDetails;
+    private Store store;
+
+    @BeforeEach // 각 테스트 실행 전 호출
+    void setUp() {
+        owner = User.builder()
                 .id(1L)
                 .email("owner@example.com")
                 .password("password")
@@ -58,7 +60,7 @@ public class MenuServiceTest {
                 .build();
 
         // UserDetailsCustom 객체 생성
-        CustomUserDetails ownerDetails = new CustomUserDetails(owner);
+        ownerDetails = new UserDetailsCustom(owner);
 
         // Security Context 설정
         Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -68,8 +70,8 @@ public class MenuServiceTest {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Store store = Store.builder()
-                .id(storeId)
+        store = Store.builder()
+                .id(1L)
                 .name("가게 이름")
                 .minOrderPrice(5000)
                 .starRate(0.0)
@@ -78,19 +80,25 @@ public class MenuServiceTest {
                 .closeAt(LocalTime.of(21, 0))
                 .user(owner)
                 .build();
+    }
 
-        MenuCreateReq menuCreateReq1 = new MenuCreateReq(storeId, "메뉴 이름 1", 10000, "메뉴 설명 1");
-        MenuCreateReq menuCreateReq2 = new MenuCreateReq(storeId, "메뉴 이름 2", 12000, "메뉴 설명 2");
+    // 메뉴 여러 개 생성 테스트
+    @Test
+    @WithMockUser(roles = "OWNER", username = "owner@example.com")
+    void 메뉴_여러개_생성_성공() {
+        // given
+        MenuCreateReq menuCreateReq1 = new MenuCreateReq(store.getId(), "메뉴 이름 1", 10000, "메뉴 설명 1");
+        MenuCreateReq menuCreateReq2 = new MenuCreateReq(store.getId(), "메뉴 이름 2", 12000, "메뉴 설명 2");
         List<MenuCreateReq> menuCreateReqList = Arrays.asList(menuCreateReq1, menuCreateReq2);
 
-        when(storeService.findStoreById(storeId)).thenReturn(store);
+        when(storeService.findStoreById(store.getId())).thenReturn(store);
 
         Menu menu1 = new Menu(1L, store, "메뉴 이름 1", 10000, "메뉴 설명 1", false);
         Menu menu2 = new Menu(2L, store, "메뉴 이름 2", 12000, "메뉴 설명 2", false);
         when(menuRepository.saveAll(anyList())).thenReturn(Arrays.asList(menu1, menu2));
 
         // when
-        List<Long> menuIds = menuService.createMenus(menuCreateReqList, ownerDetails); // userDetails를 ownerDetails로 수정
+        List<Long> menuIds = menuService.createMenus(menuCreateReqList, ownerDetails);
 
         // then
         verify(menuRepository).saveAll(anyList());
@@ -104,44 +112,13 @@ public class MenuServiceTest {
     @WithMockUser(roles = "OWNER")
     void 메뉴_수정_성공() {
         Long menuId = 1L;
-        Long storeId = 1L;
-        User owner = User.builder()
-                .id(1L)
-                .email("owner@example.com")
-                .password("password")
-                .nickName("username")
-                .role(UserRole.ROLE_OWNER)
-                .build();
-
-        // UserDetailsCustom 객체 생성
-        CustomUserDetails ownerDetails = new CustomUserDetails(owner);
-
-        // Security Context 설정
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                ownerDetails,
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_OWNER"))
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        Store store = Store.builder()
-                .id(storeId)
-                .name("가게 이름")
-                .minOrderPrice(5000)
-                .starRate(0.0)
-                .isDeleted(false)
-                .openAt(LocalTime.of(9, 0))
-                .closeAt(LocalTime.of(21, 0))
-                .user(owner)
-                .build();
-
         Menu existingMenu = new Menu(menuId, store, "Old Name", 10000, "Old Description", false);
         MenuUpdateReq updateReq = new MenuUpdateReq("New Name", 12000, "New Description");
 
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(existingMenu));
 
         // when
-        menuService.updateMenu(menuId, updateReq, ownerDetails); // userDetails를 ownerDetails로 수정
+        menuService.updateMenu(menuId, updateReq, ownerDetails);
 
         // then
         assertEquals("New Name", existingMenu.getMenuName());
@@ -154,43 +131,12 @@ public class MenuServiceTest {
     @WithMockUser(roles = "OWNER")
     void 메뉴_삭제_성공() {
         Long menuId = 1L;
-        Long storeId = 1L;
-        User owner = User.builder()
-                .id(1L)
-                .email("owner@example.com")
-                .password("password")
-                .nickName("username")
-                .role(UserRole.ROLE_OWNER)
-                .build();
-
-        // UserDetailsCustom 객체 생성
-        CustomUserDetails ownerDetails = new CustomUserDetails(owner);
-
-        // Security Context 설정
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                ownerDetails,
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_OWNER"))
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        Store store = Store.builder()
-                .id(storeId)
-                .name("가게 이름")
-                .minOrderPrice(5000)
-                .starRate(0.0)
-                .isDeleted(false)
-                .openAt(LocalTime.of(9, 0))
-                .closeAt(LocalTime.of(21, 0))
-                .user(owner)
-                .build();
-
         Menu existingMenu = new Menu(menuId, store, "Menu to be deleted", 10000, "Description", false);
 
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(existingMenu));
 
         // when
-        menuService.deleteMenu(menuId, ownerDetails); // userDetails를 ownerDetails로 수정
+        menuService.deleteMenu(menuId, ownerDetails);
 
         // then
         verify(menuRepository).save(existingMenu);
@@ -208,7 +154,7 @@ public class MenuServiceTest {
 
         // when & then
         CustomRuntimeException exception = assertThrows(CustomRuntimeException.class, () -> {
-            menuService.updateMenu(menuId, updateReq, null); // null로 전달하여 실패를 테스트
+            menuService.updateMenu(menuId, updateReq, ownerDetails); // ownerDetails로 수정
         });
         assertEquals(ErrorCode.MENU_NOT_FOUND, exception.getErrorCode());
     }
@@ -223,7 +169,7 @@ public class MenuServiceTest {
 
         // when & then
         CustomRuntimeException exception = assertThrows(CustomRuntimeException.class, () -> {
-            menuService.deleteMenu(menuId, null); // null로 전달하여 실패를 테스트
+            menuService.deleteMenu(menuId, ownerDetails); // ownerDetails로 수정
         });
         assertEquals(ErrorCode.MENU_NOT_FOUND, exception.getErrorCode());
     }

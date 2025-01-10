@@ -41,8 +41,8 @@ public class ReviewController {
     @GetMapping
     public ResponseEntity<ReviewReadInfoListRes> readReviews(
         @RequestParam Long storeId,
-        @RequestParam(required = false) int startStar,
-        @RequestParam(required = false) int endStar
+        @RequestParam(required = false) Integer startStar,
+        @RequestParam(required = false) Integer endStar
     ) {
         ReviewReadInfoListRes listRes = new ReviewReadInfoListRes(
             reviewService.readReviews(storeId, startStar, endStar));

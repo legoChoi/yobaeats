@@ -58,8 +58,17 @@ class ReviewServiceTest {
     @BeforeEach
     void setUp() {
         user = new User(1L, "user1@mail.com", "12345!", "유저1", UserRole.ROLE_USER);
-        store = Store.builder().id(1L).name("오늘파스타").build();
-        order = Order.builder().id(3L).user(user).store(store).orderStatus(OrderStatus.DELIVERED)
+        store = Store.builder()
+            .id(1L)
+            .name("오늘파스타")
+            .starRate(4.5)
+            .build();
+
+        order = Order.builder()
+            .id(3L)
+            .user(user)
+            .store(store)
+            .orderStatus(OrderStatus.DELIVERED)
             .build();
         review = new Review(1L, user, store, order, "맨날 먹어도 맛있어요.", 5);
         reviewCreateReq = new ReviewCreateReq(order.getId(), 5, "오늘 또 먹었어요.");
@@ -126,6 +135,22 @@ class ReviewServiceTest {
 
         // then
         assertEquals(store.getId(), storeId);
+    }
+
+    @DisplayName("리뷰 생성 시 가게 평균 별점이 업데이트 됨")
+    @Test
+    void createReviewUpdateStoreStarRate() {
+        // given
+        given(userService.findUserById(user.getId())).willReturn(user);
+        given(orderService.findOrderById(reviewCreateReq.orderId())).willReturn(order);
+        given(reviewRepository.existsByOrder(order)).willReturn(false);
+        given(reviewRepository.getAverageStarRate(store.getId())).willReturn(4.5);
+
+        // when
+        reviewService.createReview(user.getId(), reviewCreateReq);
+
+        // then
+        assertEquals(4.5, store.getStarRate());
     }
 
     // 리뷰 조회 관련

@@ -5,6 +5,7 @@ import com.sparta.yobaeats.domain.user.dto.response.UserReadInfoRes;
 import com.sparta.yobaeats.domain.user.dto.request.UserUpdateInfoReq;
 import com.sparta.yobaeats.domain.user.entity.User;
 import com.sparta.yobaeats.domain.user.repository.UserRepository;
+import com.sparta.yobaeats.global.exception.ConflictException;
 import com.sparta.yobaeats.global.exception.NotFoundException;
 import com.sparta.yobaeats.global.exception.UnauthorizedException;
 import com.sparta.yobaeats.global.exception.error.ErrorCode;
@@ -28,10 +29,16 @@ public class UserService {
 
     @Transactional
     public void updateUser(Long userId, UserUpdateInfoReq userUpdateInfoReq) {
+        User user = findUserById(userId);
+        if (passwordEncoder.matches(userUpdateInfoReq.password(), user.getPassword())) {
+            throw new ConflictException(ErrorCode.DUPLICATED_PASSWORD);
+        }
+
         String newPassword = (userUpdateInfoReq.password() != null)
             ? passwordEncoder.encode(userUpdateInfoReq.password())
             : null;
-        findUserById(userId).update(newPassword, userUpdateInfoReq.nickName());
+
+        user.update(newPassword, userUpdateInfoReq.nickName());
     }
 
     @Transactional

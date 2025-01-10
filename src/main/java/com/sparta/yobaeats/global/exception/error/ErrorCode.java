@@ -15,6 +15,7 @@ public enum ErrorCode {
     USER_DELETED(HttpStatus.GONE, "탈퇴한 유저입니다."),
     UNAUTHORIZED_USER(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    DUPLICATED_PASSWORD(HttpStatus.CONFLICT, "이미 사용 중인 비밀번호입니다."),
 
     // 메뉴, 주문 관련 익셉션
     MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "메뉴를 찾을 수 없습니다."),

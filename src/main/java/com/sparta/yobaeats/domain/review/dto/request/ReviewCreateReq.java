@@ -16,12 +16,12 @@ public record ReviewCreateReq(
     Long orderId,
 
     @NotNull(message = ReviewValidationMessage.STAR_BLANK_MESSAGE)
-    @Min(value = 1, message = ReviewValidationMessage.STAR_MIN)
-    @Max(value = 5, message = ReviewValidationMessage.STAR_MAX)
+    @Min(value = ReviewValidationMessage.STAR_MIN, message = ReviewValidationMessage.STAR_MIN_MESSAGE)
+    @Max(value = ReviewValidationMessage.STAR_MAX, message = ReviewValidationMessage.STAR_MAX_MESSAGE)
     int star,
 
     @NotBlank(message = ReviewValidationMessage.REVIEW_BLANK_MESSAGE)
-    @Size(min = 1, max = 100, message = ReviewValidationMessage.REVIEW_MESSAGE_RANGE)
+    @Size(max = ReviewValidationMessage.REVIEW_MAX, message = ReviewValidationMessage.REVIEW_MAX_MESSAGE)
     String contents
 ) {
 

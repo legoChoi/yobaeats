@@ -2,8 +2,10 @@ package com.sparta.yobaeats.domain.menu.entity;
 
 import com.sparta.yobaeats.domain.store.entity.Store;
 import com.sparta.yobaeats.global.exception.ConflictException;
+import com.sparta.yobaeats.global.exception.CustomRuntimeException;
 import com.sparta.yobaeats.global.exception.error.ErrorCode;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
