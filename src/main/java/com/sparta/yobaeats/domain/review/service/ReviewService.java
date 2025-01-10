@@ -50,7 +50,7 @@ public class ReviewService {
         reviewRepository.save(reviewCreateReq.to(user, order, store));
 
         Double averageStarRate = reviewRepository.getAverageStarRate(store.getId());
-        store.updateStarRate(averageStarRate != null ? averageStarRate : 0.0);
+//        store.updateStarRate(averageStarRate != null ? averageStarRate : 0.0);
 
         return store.getId();
     }
